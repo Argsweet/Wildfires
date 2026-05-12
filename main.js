@@ -52,16 +52,12 @@
       "#2b0000",
     ]),
   );
-  const dotColorScale = d3.scaleSequentialLog(
-    d3.interpolateRgbBasis([
-      "#8b0000",
-      "#d44000",
-      "#ff8c00",
-      "#ffd166",
-      "#ffffff",
-    ]),
-  );
+  const dotColors = ["#c0ebf9", "#4cc9f0", "#2e75d3", "#184c9f", "#032265"];
 
+  const dotColorScale = d3
+    .scaleThreshold()
+    .domain([25, 50, 100, 250])
+    .range(dotColors);
   /* ═══════════════ TOOLTIP ═══════════════ */
   const tooltipEl = document.getElementById("tooltip");
   function showTooltip(ev, html) {
@@ -84,6 +80,8 @@
   const svg = d3.select("#map-svg");
   const mapG = svg.append("g").attr("class", "map-root");
   const statesG = mapG.append("g").attr("class", "states-layer");
+  const divideG = mapG.append("g").attr("class", "divide-layer");
+
   const dotsG = mapG.append("g").attr("class", "dots-layer");
   const brushG = svg.append("g").attr("class", "brush-layer");
 
@@ -223,7 +221,92 @@
       (mode === "intensity" ? "Avg FRP (MW)" : "Fire count") +
       ` · ${appState.year}`;
   }
+  function drawSouthCountHighlight(show) {
+    divideG.selectAll(".south-highlight").remove();
 
+    if (!show || appState.view !== "national") return;
+
+    const groupStates = new Set([
+      "Texas",
+      "Kansas",
+      "Arkansas",
+      "Georgia",
+      "Alabama",
+      "Mississippi",
+      "Oklahoma",
+      "Florida",
+      "Louisiana",
+    ]);
+
+    const groupIds = new Set(
+      appState._stateFeatures
+        .filter((f) => groupStates.has(f.properties.name))
+        .map((f) => f.id),
+    );
+
+    const boundary = topojson.mesh(
+      appState.geo,
+      appState.geo.objects.states,
+      (a, b) => {
+        const aIn = groupIds.has(a.id);
+        const bIn = groupIds.has(b.id);
+
+        // only borders where one side is in the group and the other is not
+        return a !== b && aIn !== bIn;
+      },
+    );
+
+    divideG
+      .append("path")
+      .datum(boundary)
+      .attr("class", "south-highlight")
+      .attr("d", appState.path)
+      .attr("fill", "none")
+      .attr("stroke", "#ffd166")
+      .attr("stroke-width", 4)
+      .attr("stroke-linejoin", "round")
+      .attr("stroke-linecap", "round")
+      .attr("opacity", 0.85)
+
+      .style("filter", "drop-shadow(0 0 6px #ff7b00)")
+      .attr("pointer-events", "none");
+  }
+
+  function drawWestDivide(show) {
+    divideG.selectAll("*").remove();
+
+    if (!show || appState.view !== "national") return;
+    const coords = [
+      [-104.05, 49.0], // MT / ND
+      [-104.05, 45.0], // WY / SD
+      [-104.05, 41.0], // WY / NE
+      [-102.05, 41.0], // NE / CO
+      [-102.05, 37.0], // CO / KS / OK
+      [-103.0, 37.0], // NM / OK panhandle top
+      [-103.0, 31.9], // NM / TX
+    ];
+
+    const line = d3
+      .line()
+      .x((d) => appState.projection(d)[0])
+      .y((d) => appState.projection(d)[1])
+
+      .defined((d) => appState.projection(d));
+
+    divideG
+      .append("path")
+      .datum(coords)
+      .attr("d", line)
+      .attr("fill", "none")
+      .attr("stroke", "#26edff")
+      .style("filter", "drop-shadow(0 0 6px #00eeff)")
+
+      .attr("stroke-width", 4)
+      .attr("stroke-linecap", "round")
+      .attr("stroke-linejoin", "round")
+      .attr("opacity", 0.85)
+      .attr("pointer-events", "none");
+  }
   /* ═══════════════ NATIONAL VIEW ═══════════════ */
   function drawNational() {
     const { year, colorMode, stateYearStats, _stateFeatures, path } = appState;
@@ -275,6 +358,8 @@
         return val > 0 ? colorScale(val) : "#0b1020";
       });
     dotsG.selectAll("*").remove();
+    drawWestDivide(colorMode === "intensity");
+    drawSouthCountHighlight(colorMode === "frequency");
     updateSidePanel(null, year);
   }
 
@@ -295,7 +380,9 @@
     document.getElementById("mode-group").style.display = "none";
     document.getElementById("hint").textContent =
       "Drag to brush fires · side panel shows % change trends for selection";
+    document.getElementById("legend").style.display = "block";
     document.getElementById("cluster-legend").style.display = "block";
+
     if (!appState.rawByState) appState.rawByState = {};
 
     if (!appState.rawByState[stateName]) {
@@ -308,6 +395,7 @@
   }
 
   function drawStateView() {
+    divideG.selectAll("*").remove();
     const stateName = appState.selectedStateName;
     const year = appState.year;
     const feat = appState._stateFeatures.find(
@@ -363,7 +451,10 @@
       .flatMap(([gx, rows]) => rows.map(([gy, value]) => value));
 
     const frpExt = d3.extent(fires, (d) => d.frp);
-    dotColorScale.domain([Math.max(frpExt[0] || 1, 0.1), frpExt[1] || 100]);
+    const frpLo = Math.max(frpExt[0] || 1, 0.1);
+    const frpHi = frpExt[1] || 100;
+
+    updateStateFRPLegend(frpLo, frpHi);
 
     const radiusScale = d3
       .scaleSqrt()
@@ -462,6 +553,7 @@
     document.getElementById("mode-group").style.display = "";
     document.getElementById("hint").textContent =
       "← Click a state to drill in. Zoom + pan enabled.";
+    document.getElementById("legend").style.display = "block";
     document.getElementById("cluster-legend").style.display = "none";
     brushG.selectAll("*").remove();
     dotsG.selectAll("*").remove();
@@ -565,7 +657,7 @@
       "#trend-empty",
       pctChangeSeries("avgFRP", appState.years, yearStats),
       subtitle,
-      "#ff6b35",
+      "#4cc9f0",
     );
     const rawCountSeries = appState.years.map((y) => ({
       year: y,
@@ -576,7 +668,7 @@
       "#freq-empty",
       rawCountSeries,
       subtitle,
-      "#4cc9f0",
+      "#ff6b35",
       false,
     );
   }
@@ -778,6 +870,25 @@
         drawStateView();
       }
     });
+  }
+
+  function updateStateFRPLegend(lo, hi) {
+    const canvas = document.getElementById("leg-canvas");
+    const ctx = canvas.getContext("2d");
+
+    intensityScale.domain([Math.max(lo, 0.1), hi]);
+    const colors = dotColorScale.range();
+    const blockWidth = 110 / colors.length;
+
+    colors.forEach((c, i) => {
+      ctx.fillStyle = c;
+      ctx.fillRect(i * blockWidth, 0, blockWidth, 8);
+    });
+
+    document.getElementById("leg-lo").textContent = lo.toFixed(1);
+    document.getElementById("leg-hi").textContent = hi.toFixed(0);
+    document.getElementById("leg-title").textContent =
+      `Avg FRP (MW) · ${appState.year}`;
   }
 
   /* ═══════════════ INIT ═══════════════ */
