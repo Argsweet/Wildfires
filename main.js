@@ -18,7 +18,8 @@
   const appState = {
     view: "national",
     year: 2001,
-colorMode: "frequency",    selectedStateName: null,
+    colorMode: "frequency",
+    selectedStateName: null,
     brushExtent: null,
     raw: [],
     years: [],
@@ -159,6 +160,40 @@ colorMode: "frequency",    selectedStateName: null,
     return map;
   }
 
+  function stateFileName(stateName) {
+    return stateName.replace(/[^A-Za-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+  }
+
+  async function loadStateFires(stateName) {
+    const file = `fires_by_state/${stateFileName(stateName)}.csv.gz`;
+
+    document.getElementById("loading-msg").textContent =
+      `Loading ${stateName} fires…`;
+    document.getElementById("loading").style.display = "flex";
+
+    const compressed = await d3.buffer(file);
+    let csvText = pako.ungzip(new Uint8Array(compressed), { to: "string" });
+    csvText = csvText.replace(/^\uFEFF/, "");
+
+    const rows = d3.csvParse(csvText, (d) => {
+      const date = parseYMD(d.acq_date);
+      const year = date.getUTCFullYear();
+      const frp = +d.frp;
+
+      return {
+        latitude: +d.latitude,
+        longitude: +d.longitude,
+        frp,
+        acq_date: date,
+        year,
+        stateName: d.stateName,
+      };
+    });
+
+    document.getElementById("loading").style.display = "none";
+    return rows;
+  }
+
   function pctChangeSeries(statKey, years, statsMap) {
     const vals = years.map((y) => (statsMap[y] ? statsMap[y][statKey] : null));
     const baseIdx = vals.findIndex((v) => v !== null && v > 0);
@@ -244,7 +279,7 @@ colorMode: "frequency",    selectedStateName: null,
   }
 
   /* ═══════════════ STATE DRILL-DOWN ═══════════════ */
-  function drillIntoState(stateName) {
+  async function drillIntoState(stateName) {
     appState.view = "state";
     appState.selectedStateName = stateName;
     appState.brushExtent = null;
@@ -261,6 +296,14 @@ colorMode: "frequency",    selectedStateName: null,
     document.getElementById("hint").textContent =
       "Drag to brush fires · side panel shows % change trends for selection";
     document.getElementById("cluster-legend").style.display = "block";
+    if (!appState.rawByState) appState.rawByState = {};
+
+    if (!appState.rawByState[stateName]) {
+      appState.rawByState[stateName] = await loadStateFires(stateName);
+    }
+
+    appState.raw = appState.rawByState[stateName];
+
     drawStateView();
   }
 
@@ -755,82 +798,24 @@ colorMode: "frequency",    selectedStateName: null,
     appState.projection = proj;
     appState.path = d3.geoPath(proj);
 
-    // 2. CSV
+    // 2. Stats only
     document.getElementById("loading-msg").textContent =
-      "Loading MODIS fire data…";
-    let csvText;
-    if (
-      typeof window.__MODIS_FIRES_CSV === "string" &&
-      window.__MODIS_FIRES_CSV.length
-    ) {
-      csvText = window.__MODIS_FIRES_CSV;
-    } else {
-      const compressed = await d3.buffer("fires_small.csv.gz");
-  csvText = pako.ungzip(new Uint8Array(compressed), { to: "string" });
+      "Loading precomputed statistics…";
 
-      // remove UTF-8 BOM if present
-      csvText = csvText.replace(/^\uFEFF/, "");
-    }
+    appState.stateYearStats = await d3.json("state_year_stats.json");
 
-    document.getElementById("loading-msg").textContent =
-      "Parsing fire records…";
+    appState.years = d3.range(2001, 2026);
 
-    // Parse — works whether or not CSV has a stateName column
-    const raw = d3
-      .csvParse(csvText, (d) => {
-        const date = parseYMD(d.acq_date);
-        if (!date) return null;
-        const year = date.getUTCFullYear();
-        if (year < 2001 || year > 2025) return null;
-        const frp = +d.frp;
-        if (isNaN(frp) || frp <= 0) return null;
-        return {
-          latitude: +d.latitude,
-          longitude: +d.longitude,
-          brightness: +d.brightness,
-          frp,
-          acq_date: date,
-          year,
-          acq_time: d.acq_time || "",
-          satellite: d.satellite || "",
-          confidence: +d.confidence || 0,
-          bright_t31: +d.bright_t31 || 0,
-          daynight: d.daynight || "",
-          // If pre-processed CSV has stateName, use it; otherwise assign below
-          stateName:
-            d.stateName && d.stateName.trim() !== ""
-              ? d.stateName.trim()
-              : null,
-        };
-      })
-      .filter((d) => d !== null);
-
-    // 3. Assign stateName via PIP for any rows that need it
-    const needsPIP = raw.filter((r) => r.stateName === null);
-    if (needsPIP.length > 0) {
-      document.getElementById("loading-msg").textContent =
-        `Assigning states… (${needsPIP.length.toLocaleString()} fires, please wait)`;
-      await assignStateNames(needsPIP);
-    }
-
-    appState.raw = raw.filter((d) => d.stateName !== null);
-
-    console.log(
-      `Loaded ${appState.raw.length.toLocaleString()} fires with state assignments`,
-    );
-
-    appState.years = Array.from(new Set(appState.raw.map((d) => d.year)))
-      .sort((a, b) => a - b)
-      .filter((y) => y >= 2000 && y <= 2025);
-
-    const minYear = appState.years[0] || 2000;
-    const maxYear = appState.years[appState.years.length - 1] || 2025;
+    const minYear = 2001;
+    const maxYear = 2025;
 
     // 4. Stats
     document.getElementById("loading-msg").textContent =
-      "Computing statistics…";
-    appState.stateYearStats = buildStateYearStats(appState.raw);
+      "Loading precomputed statistics…";
 
+    appState.stateYearStats = await d3.json("state_year_stats.json");
+
+    appState.years = d3.range(2001, 2026);
     // 5. Slider
     const slider = document.getElementById("year-slider");
     slider.min = minYear;
