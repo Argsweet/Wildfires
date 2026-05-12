@@ -766,8 +766,9 @@
     ) {
       csvText = window.__MODIS_FIRES_CSV;
     } else {
-      csvText = await d3.text("data/modis_fires_us_2001_to_2025.csv");
-
+            csvText = await d3.text(
+        "https://github.com/Argsweet/Wildfires/releases/download/v1.0/fires_small.csv",
+      );
       // remove UTF-8 BOM if present
       csvText = csvText.replace(/^\uFEFF/, "");
     }
