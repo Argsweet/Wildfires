@@ -13,7 +13,7 @@
   --accent: #ff6b35;
   --accent2: #ffd166;
   --cool: #4cc9f0;
-  --font-head: "Syne", sans-serif;
+  --font-head: "roboto bold", sans-serif;
   --font-mono: "Space Mono", monospace;
 }
 
@@ -109,11 +109,12 @@ header {
 }
 header h1 {
   font-family: var(--font-head);
-  font-size: clamp(1.4rem, 3vw, 2.2rem);
-  font-weight: 800;
+  font-size: clamp(1.8rem, 3vw, 3rem);
+  font-weight: 1000;
   letter-spacing: -0.03em;
   line-height: 1.1;
   color: #fff;
+  margin-bottom: 10px;
 }
 header h1 span {
   color: var(--accent);
@@ -233,10 +234,10 @@ input[type="range"]::-webkit-slider-thumb {
 }
 #hint {
   margin-left: auto;
-  font-size: 0.7rem;
+  font-size: 1rem;
   color: var(--muted);
   font-style: italic;
-  max-width: 300px;
+  max-width: 400px;
   text-align: right;
   line-height: 1.4;
 }
