@@ -18,8 +18,7 @@
   const appState = {
     view: "national",
     year: 2001,
-    colorMode: "intensity",
-    selectedStateName: null,
+colorMode: "frequency",    selectedStateName: null,
     brushExtent: null,
     raw: [],
     years: [],
