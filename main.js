@@ -766,7 +766,7 @@
     ) {
       csvText = window.__MODIS_FIRES_CSV;
     } else {
-      const compressed = await d3.buffer("data/fires_small.csv.gz");
+      const compressed = await d3.buffer("fires_small.csv.gz");
   csvText = pako.ungzip(new Uint8Array(compressed), { to: "string" });
 
       // remove UTF-8 BOM if present
