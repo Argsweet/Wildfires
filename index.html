@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>US Wildfire Intensity · MODIS 2001–2025</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="loading">
+      <div class="spinner"></div>
+      <h2>IGNITION</h2>
+      <p id="loading-msg">Loading MODIS fire data 2001–2025…</p>
+    </div>
+
+    <div id="tooltip"></div>
+
+    <header>
+      <div class="title-block">
+        <h1>A Country <span>on Fire</span></h1>
+        <h2>The South Burns Often. The West Burns Harder.</h2>
+        <p class="subtitle">
+          NASA MODIS satellite detections · 2001–2025 · Click any state to drill
+          down, then brush fires to explore year-over-year trends
+        </p>
+      </div>
+    </header>
+
+    <div class="app">
+      <!-- ── CONTROLS ── -->
+      <div id="controls">
+        <div class="ctrl-group">
+          <span class="ctrl-label">Year</span>
+          <span class="ctrl-value" id="year-val">2001</span>
+          <input
+            type="range"
+            id="year-slider"
+            min="2001"
+            max="2025"
+            step="1"
+            value="2001"
+          />
+        </div>
+
+        <div class="ctrl-group" id="mode-group">
+          <span class="ctrl-label">Color mode</span>
+          <div class="mode-toggle">
+            <button class="mode-btn active" data-mode="intensity">
+              Avg Intensity
+            </button>
+            <button class="mode-btn" data-mode="frequency">Fire Count</button>
+          </div>
+        </div>
+
+        <div class="ctrl-group" id="brush-controls" style="display: none">
+          <span class="ctrl-label">Brush selection</span>
+          <div class="mode-toggle">
+            <button class="mode-btn active" id="btn-brush-on">Brush ON</button>
+            <button class="mode-btn" id="btn-brush-off">Clear Brush</button>
+          </div>
+        </div>
+
+        <div id="hint">← Click a state to drill in. Zoom + pan enabled.</div>
+      </div>
+
+      <!-- ── MAP ── -->
+      <div id="map-panel">
+        <svg id="map-svg"></svg>
+        <button id="back-btn">← Back to US</button>
+        <div id="state-label-overlay"></div>
+        <div id="legend">
+          <div class="leg-title" id="leg-title">Avg FRP (MW) · 2001</div>
+          <canvas
+            class="leg-gradient"
+            id="leg-canvas"
+            width="110"
+            height="8"
+          ></canvas>
+          <div class="leg-row">
+            <span id="leg-lo">0</span>
+            <span id="leg-hi">high</span>
+          </div>
+        </div>
+
+        <div id="cluster-legend">
+          <div class="leg-title">Cluster size</div>
+
+          <div class="bubble-row">
+            <div class="bubble-item">
+              <span class="bubble b1"></span>
+              <span>10</span>
+            </div>
+
+            <div class="bubble-item">
+              <span class="bubble b2"></span>
+              <span>20</span>
+            </div>
+
+            <div class="bubble-item">
+              <span class="bubble b3"></span>
+              <span>30+</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SIDE PANEL ── -->
+      <div id="side-panel">
+        <div class="panel-section">
+          <div class="panel-title" id="side-context-label">
+            National · <span id="side-year">2001</span>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-box">
+              <div class="stat-label">Total detections</div>
+              <div class="stat-val cool" id="stat-count">—</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">Avg FRP (MW)</div>
+              <div class="stat-val hot" id="stat-frp">—</div>
+            </div>
+            <!-- hidden in state view -->
+            <div class="stat-box" id="stat-peak-box">
+              <div class="stat-label">Peak state</div>
+              <div class="stat-val" id="stat-peak" style="font-size: 0.9rem">
+                —
+              </div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">Max single FRP</div>
+              <div class="stat-val hot" id="stat-max">—</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-section charts-section">
+          <div>
+            <div class="panel-title">Intensity trend (avg FRP % change)</div>
+            <p class="panel-empty" id="trend-empty">
+              Drill into a state to see trends.
+            </p>
+            <svg
+              id="trend-svg"
+              viewBox="0 0 300 130"
+              style="display: none"
+            ></svg>
+          </div>
+          <div>
+            <div class="panel-title">Frequency trend (raw fire count)</div>
+            <p class="panel-empty" id="freq-empty">
+              Drill into a state to see trends.
+            </p>
+            <svg
+              id="freq-svg"
+              viewBox="0 0 300 130"
+              style="display: none"
+            ></svg>
+          </div>
+        </div>
+      </div>
+      <!-- /side-panel -->
+    </div>
+    <!-- /app -->
+
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+    <script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
+    <script src="main.js"></script>
+  </body>
+</html>
