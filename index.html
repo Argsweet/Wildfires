@@ -10,6 +10,60 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="style.css" />
+    <style>
+      #writeup {
+        max-width: 860px;
+        margin: 60px auto 80px;
+        padding: 0 32px;
+        font-family: "Space Mono", monospace;
+        color: #ccc;
+      }
+
+      #writeup h2 {
+        font-family: "Syne", sans-serif;
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 48px 0 16px;
+        border-bottom: 1px solid #333;
+        padding-bottom: 8px;
+      }
+
+      #writeup h2:first-child {
+        margin-top: 0;
+      }
+
+      #writeup h3 {
+        font-family: "Syne", sans-serif;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #e8c97a;
+        margin: 32px 0 10px;
+      }
+
+      #writeup p {
+        font-size: 0.85rem;
+        line-height: 1.85;
+        margin: 0 0 14px;
+      }
+
+      #writeup ul {
+        list-style: disc;
+        padding-left: 24px;
+        margin: 8px 0 16px;
+      }
+
+      #writeup ul li {
+        font-size: 0.85rem;
+        line-height: 1.75;
+        margin-bottom: 6px;
+      }
+
+      #writeup strong {
+        color: #fff;
+        font-weight: 700;
+      }
+    </style>
   </head>
   <body>
     <div id="loading">
@@ -23,10 +77,15 @@
     <header>
       <div class="title-block">
         <h1>A Country <span>on Fire</span></h1>
-        <h2 style="margin-bottom: 10px;">The South Burns Often. The West Burns Harder.</h2>
+        <h2 style="margin-bottom: 10px">
+          The South Burns Often. The West Burns Harder.
+        </h2>
         <h3>
-          Statewise wildfire intensity (FRP – Fire Radiative Power) and fire count (MODIS satellite detections).
-          Comparison between the two maps highlight a key difference between the South and West: throughout the years, the South has seen more frequent wildfires, while the West has seen more intense wildfires.
+          Statewise wildfire intensity (FRP – Fire Radiative Power) and fire
+          count (MODIS satellite detections). Comparison between the two maps
+          highlight a key difference between the South and West: throughout the
+          years, the South has seen more frequent wildfires, while the West has
+          seen more intense wildfires.
         </h3>
         <p class="subtitle">
           NASA MODIS satellite detections · 2001–2025 · Click any state to drill
@@ -54,10 +113,12 @@
         <div class="ctrl-group" id="mode-group">
           <span class="ctrl-label">Color mode</span>
           <div class="mode-toggle">
-<button class="mode-btn active" data-mode="frequency">Fire Count</button>
-<button class="mode-btn" data-mode="intensity">
-  Avg Intensity
-</button>
+            <button class="mode-btn active" data-mode="frequency">
+              Fire Count
+            </button>
+            <button class="mode-btn" data-mode="intensity">
+              Avg Intensity
+            </button>
           </div>
         </div>
 
@@ -93,18 +154,15 @@
 
         <div id="cluster-legend">
           <div class="leg-title">Cluster size</div>
-
           <div class="bubble-row">
             <div class="bubble-item">
               <span class="bubble b1"></span>
               <span>10</span>
             </div>
-
             <div class="bubble-item">
               <span class="bubble b2"></span>
               <span>20</span>
             </div>
-
             <div class="bubble-item">
               <span class="bubble b3"></span>
               <span>30+</span>
@@ -128,12 +186,9 @@
               <div class="stat-label">Avg FRP (MW)</div>
               <div class="stat-val hot" id="stat-frp">—</div>
             </div>
-            <!-- hidden in state view -->
             <div class="stat-box" id="stat-peak-box">
               <div class="stat-label">Peak state</div>
-              <div class="stat-val" id="stat-peak">
-                —
-              </div>
+              <div class="stat-val" id="stat-peak">—</div>
             </div>
             <div class="stat-box">
               <div class="stat-label">Max single FRP</div>
@@ -171,9 +226,250 @@
     </div>
     <!-- /app -->
 
+    <!-- ── WRITE-UP ── -->
+    <section id="writeup">
+      <h2>Write Up</h2>
+
+      <p>
+        Our project began with a simple question: Are wildfires in the United
+        States just becoming more common, or are they also becoming more
+        intense? Using NASA MODIS satellite wildfire data, we wanted to explore
+        how wildfire behavior has changed across different regions of the
+        country over time, not just through the number of fires detected, but
+        also through their severity and intensity.
+      </p>
+
+      <p>
+        At first, we tried visualizing every wildfire detection as individual
+        points on a map. While this showed the scale of the dataset, it became
+        way too overplotted. Thousands of overlapping points made it difficult
+        to distinguish meaningful regional patterns or long-term trends. Instead
+        of helping users understand the data, the visualization became cluttered
+        and hard to interpret. Due to this, we shifted our approach toward a
+        more interactive and aggregated design. We created a dashboard centered
+        around a U.S. choropleth map displaying wildfire activity from 2001 to
+        2025. Users can switch between two perspectives of the data: Fire Count
+        and Average Intensity (FRP). We used separate color scales, red for
+        wildfire frequency and blue for intensity, to make the distinction
+        visually clear and easier to compare across states.
+      </p>
+
+      <p>
+        As we developed the project further, we realized that fire counts alone
+        did not fully represent wildfire severity. Some regions appeared
+        relatively stable in terms of total fire detections, but when we
+        analyzed FRP and brightness values, we saw much stronger increases in
+        fire intensity. This became especially noticeable when comparing western
+        states to parts of the American South. FRP was particularly important
+        because it measures the amount of radiative energy released by a fire,
+        making it a strong indicator of wildfire intensity.
+      </p>
+
+      <p>
+        To make the visualization more exploratory, we added interactive
+        features throughout the dashboard. Hovering over a state reveals
+        information such as total detections, average FRP, and maximum FRP
+        values for that year. Clicking on a state opens a drill-down view where
+        users can analyze wildfire activity within that region in more detail.
+        Instead of displaying every wildfire point individually in the state
+        view, we grouped detections into clustered regions to reduce
+        overplotting and improve readability. Users can then use drag-based
+        brushing to select specific areas within a state and compare regional
+        wildfire behavior over time. The visualization also categorizes fire
+        count and intensity into three cluster levels (10, 20, and 30) making
+        patterns easier to identify visually.
+      </p>
+
+      <p>
+        Overall, the project evolved from a simple wildfire map into an
+        interactive system for exploring how wildfire frequency and intensity
+        change across both geography and time.
+      </p>
+
+      <h2>Visualization Design Decisions</h2>
+
+      <h3>National Choropleth Map</h3>
+
+      <p>
+        Our main visualization is an interactive U.S. choropleth map showing
+        wildfire activity by state. Users can switch between:
+      </p>
+
+      <ul>
+        <li>Fire Count</li>
+        <li>Average Fire Intensity (FRP)</li>
+      </ul>
+
+      <p>
+        We included both because fire counts alone do not fully represent
+        wildfire severity. Some states may have fewer fires but much higher
+        intensity levels. We used a binned color scale instead of a continuous
+        gradient to improve readability and make regional differences easier to
+        distinguish.
+      </p>
+
+      <p>The map includes:</p>
+
+      <ul>
+        <li>Year slider for temporal exploration</li>
+        <li>Zoom and pan</li>
+        <li>Hovering over each state</li>
+        <li>
+          Clicking on each state to show the firing rate/Intensity of that area
+        </li>
+      </ul>
+
+      <p>Hovering over a state reveals:</p>
+
+      <ul>
+        <li>Fire count</li>
+        <li>Average FRP</li>
+        <li>Maximum FRP</li>
+      </ul>
+
+      <p>
+        The side panel also displays national summary statistics such as total
+        detections, peak state, average FRP, and maximum recorded FRP.
+      </p>
+
+      <h3>State Drill-Down View</h3>
+
+      <p>
+        Clicking a state opens a detailed regional view showing clustered
+        wildfire detections within that state. We originally considered plotting
+        every wildfire point individually, but this caused heavy overplotting.
+        Instead, we used clustered circles to better show spatial density and
+        regional hotspots while keeping the visualization readable. Circle size
+        represents wildfire concentration across locations in three bins: 10, 20
+        and 30+.
+      </p>
+
+      <h3>Brushing Interaction</h3>
+
+      <p>
+        The drill-down map supports brushing, allowing users to drag over
+        specific regions within a state. Once a region is brushed, the side
+        panel dynamically updates to show trends only for the selected area.
+        This allows users to compare localized wildfire behavior within the same
+        state. We chose brushing because it supports exploratory analysis and
+        reveals regional differences that state-level summaries alone cannot
+        show. We also users to be able to get the average trends over a bigger
+        area and not just a point of wildfires in each region/state.
+      </p>
+
+      <h3>Temporal Trend Graphs</h3>
+
+      <p>The side panel contains two linked trend graphs:</p>
+
+      <ul>
+        <li>
+          <strong>Intensity Trend (Average FRP % Change):</strong> Shows how
+          wildfire intensity changes over time using percentage change in FRP
+          values. This graph highlights that wildfire intensity can increase
+          even when fire counts remain relatively stable.
+        </li>
+        <li>
+          <strong>Frequency Trend (Raw Fire Count):</strong> Shows total
+          wildfire detections over time for the selected state or brushed
+          region.
+        </li>
+      </ul>
+
+      <p>
+        Displaying both graphs together allows users to compare wildfire
+        frequency versus severity directly.
+      </p>
+
+      <h3>Visual Styling and Layout</h3>
+
+      <p>
+        We used a dark-themed interface to improve contrast and emphasize
+        wildfire-related colors such as orange and red for the firing rate and
+        blue and white for the average intensity.
+      </p>
+
+      <p>The dashboard layout keeps:</p>
+
+      <ul>
+        <li>The map as the main focus,</li>
+        <li>Controls easily accessible,</li>
+        <li>Trend graphs and statistics visible during interaction.</li>
+      </ul>
+
+      <p>
+        We also redesigned the layout multiple times to create a more connected
+        dashboard experience where all views update together dynamically.
+      </p>
+
+      <h3>Why These Interactions Matter</h3>
+
+      <p>
+        Wildfire data is both spatial and temporal, making interaction
+        essential.
+      </p>
+
+      <p>Our visualization allows users to:</p>
+
+      <ul>
+        <li>Explore national wildfire patterns,</li>
+        <li>Drill into specific states,</li>
+        <li>Brush localized regions,</li>
+        <li>Compare fire counts and intensity trends over time.</li>
+      </ul>
+
+      <p>
+        This layered interaction design helps users uncover patterns that would
+        be difficult to identify in a static visualization.
+      </p>
+
+      <h2>Development Process</h2>
+
+      <p>Our team divided responsibilities across:</p>
+
+      <ul>
+        <li>Data cleaning and preprocessing</li>
+        <li>D3 visualization implementation</li>
+        <li>Interaction and filtering logic</li>
+        <li>Styling and layout design</li>
+        <li>Narrative writeup and interpretation</li>
+      </ul>
+
+      <p>
+        The development process involved extensive experimentation with both
+        visual encodings and interaction techniques. One of the most time
+        consuming aspects was handling the scale of the MODIS dataset while
+        maintaining smooth interactivity in the browser. We spent significant
+        time optimizing rendering performance and restructuring data aggregation
+        pipelines. Another major challenge was determining how to visually
+        encode wildfire intensity. Early versions focused too heavily on fire
+        counts, which masked important differences in severity. Incorporating
+        FRP and brightness measurements significantly improved the analytical
+        depth of the project. In total, we estimate spending approximately 40
+        hours developing the application, including data preprocessing,
+        debugging, design iteration, and deployment.
+      </p>
+
+      <ul>
+        <li>
+          <strong>Shreya Bharathwajan:</strong> Visualization design, Styling
+          and layout design, narrative writeup and interpretation
+        </li>
+        <li>
+          <strong>Annabelle Guiditta:</strong> Data cleaning and preprocessing,
+          D3 visualization implementation, Interaction and filtering logic,
+          Styling and layout design
+        </li>
+        <li>
+          <strong>Ishayu Ghosh:</strong> Visualization design, Styling and
+          layout design, narrative writeup and interpretation
+        </li>
+      </ul>
+    </section>
+    <!-- /writeup -->
+
     <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
     <script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
 
     <script src="main.js"></script>
   </body>
