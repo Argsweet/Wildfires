@@ -104,9 +104,6 @@ header {
   padding: 2rem 2rem 1.5rem;
   border-bottom: 1px solid var(--border);
 }
-.title-block {
-  max-width: 700px;
-}
 header h1 {
   font-family: var(--font-head);
   font-size: clamp(1.8rem, 3vw, 3rem);
@@ -123,7 +120,6 @@ header h1 span {
   margin-top: 0.5rem;
   color: var(--muted);
   font-size: 0.78rem;
-  max-width: 480px;
 }
 
 /* ── BREADCRUMB ── */
@@ -234,10 +230,11 @@ input[type="range"]::-webkit-slider-thumb {
 }
 #hint {
   margin-left: auto;
+  flex: 1 1 12rem;
+  min-width: 0;
   font-size: 1rem;
   color: var(--muted);
   font-style: italic;
-  max-width: 400px;
   text-align: right;
   line-height: 1.4;
 }
